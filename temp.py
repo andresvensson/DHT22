@@ -31,9 +31,7 @@ db = MySQLdb.connect("10.0.0.160","test","test123","test" )
 # prepare a cursor object using cursor() method
 cursor = db.cursor()
 
-
 sql = "INSERT INTO test (S1temp, S1humidity, S2temp, S2humidity, Time) VALUES (%s, %s, %s, %s, %s)"
-
 
 try:
    # Execute the SQL command
@@ -48,3 +46,7 @@ except MySQLdb.Error, e:
 
 # disconnect from server
 db.close()
+
+## THINKERING
+## When it´s done it pops outouts from eriler code? (maybe the rollback string?)
+##
