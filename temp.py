@@ -48,5 +48,5 @@ except MySQLdb.Error, e:
 db.close()
 
 ## THINKERING
-## When it´s done it pops outouts from eriler code? (maybe the rollback string?)
+## When it´s done it pops outouts from earlier code? (maybe the rollback string?)
 ## Do I need some kind of a loop going? What does that even mean?
