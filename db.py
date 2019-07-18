@@ -36,8 +36,7 @@ class Database:
             self.cursor.execute("CREATE DATABASE {}".format(database_name))
         except mysql.connector.Error as err:
             print(bcolors.FAIL, "[!] Could not create database", bcolors.ENDC)
-            print(bcolors.FAIL, "[!] Error message: ", err, bcolors.ENDC)
-
+            raise err
         self.cnx.commit()
 
     def table_exists(self) -> bool:
