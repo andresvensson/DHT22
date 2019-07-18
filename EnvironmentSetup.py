@@ -1,6 +1,6 @@
 from Database import Database
-from read_temp import TempReader
-from helpers import *
+from TempReader import TempReader
+from helpers import bcolors, query_yes_no
 import configparser
 from datetime import datetime, timedelta
 import random
@@ -69,6 +69,7 @@ def do_setup():
             if query_yes_no("Create sample data?"):
                 create_sample_data(input("How many rows?"))
     """
+
 if __name__ == "__main__":
     do_setup()
     print(bcolors.HEADER, "Setup complete.", bcolors.ENDC)
