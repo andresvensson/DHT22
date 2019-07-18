@@ -22,15 +22,6 @@ class Database:
 
         self.cursor = self.cnx.cursor()
 
-    @staticmethod
-    def handle_error_code(error: mysql.connector.Error):
-            if error.errno == 2003:
-                print("Please check that you supplied the correct host.")
-            elif error.errno == 1045:
-                print(bcolors.WARNING, "Wrong username or password.", bcolors.ENDC)
-            elif error.errno == 1049:
-                print(bcolors.WARNING, "The database does not exist.", bcolors.ENDC)
-
     def create_new_database(self, database_name):
         try:
             self.cursor.execute("CREATE DATABASE {}".format(database_name))
@@ -57,12 +48,18 @@ class Database:
             print(row[0], ":", row[1])
 
     def insert_row(self, data):
-        self.cursor.execute(Database.INSERT_QUERY, data)
+        self.cursor.execute(self.INSERT_QUERY, data)
         self.cnx.commit()
 
-def get_reading_dict():
-    read_dict = {"timestamp": "", "sensor": "", "temp": "", "humidity": "", "location": ""}
-    return read_dict
+    @staticmethod
+    def handle_error_code(error: mysql.connector.Error):
+            if error.errno == 2003:
+                print("Please check that you supplied the correct host.")
+            elif error.errno == 1045:
+                print(bcolors.WARNING, "Wrong username or password.", bcolors.ENDC)
+            elif error.errno == 1049:
+                print(bcolors.WARNING, "The database does not exist.", bcolors.ENDC)
+
 
 if __name__ == "__main__":
     db = Database()
