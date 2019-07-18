@@ -1,58 +1,57 @@
 #!/usr/bin/python
 import Adafruit_DHT
-import db
+from Database import Database
+from typing import Dict
 from time import sleep
 from datetime import datetime
 import configparser
 #Setup global variables
-sensor = Adafruit_DHT.DHT22
-config = configparser.ConfigParser()
+
 PIN17 = 17
 PIN27 = 27
 SLEEPY_TIME_MINUTES = 5
 
+class TempReader:
+    def __init__(self, pin: int, location: str, sensor=Adafruit_DHT.DHT22):
+        self.pin = pin
+        self.sensor = Adafruit_DHT.DHT22
+        self.location = location
+        self.config = configparser.ConfigParser()
+        self.config.read('DHT22.cfg')
+        self.temperature: float = 0
+        self.humidity: float = 0
 
-def read_temperature(pin):
-    humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
-    if humidity is not None and temperature is not None:
-        print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(temperature, humidity))
-        return '{0.1f}'.format(temperature), '{0.1f}'.format(humidity)
-    else:
-        print('Failed to get reading. Try again!')
-        return 0, 0
+    def get_reading(self):
+        self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor, self.pin)
+        if self.humidity is not None and self.temperature is not None:
+            print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(self.temperature, self.humidity))
+        else:
+            print('Failed to get reading. Try again!')
+            self.humidity, self.temperature = 0, 0
 
-
-def get_location(sensorID):
-    return 'Unknown'
-
-
-def store_in_database(temp, humidity, curr_sensor):
-    data = db.get_reading_dict()
-    data["timestamp"] = datetime.now()
-    data["sensor"] = curr_sensor
-    data["temp"] = temp
-    data["humidity"] = humidity
-    data["location"] = get_location(curr_sensor)
-    db.insert_row(data)
-    return True
+    def get_dict(self) -> dict:
+        return { 
+            "timestamp": datetime.now(),
+            "sensor": self.sensor,
+            "temp": self.temperature,
+            "humidity": self.humidity,
+            "location": self.location
+        }
 
 
 def main_loop():
+    db = Database()
+    sensors: Dict[TempReader] = {
+        TempReader(PIN17, str(PIN17)),
+        TempReader(PIN27, str(PIN27))
+    }
     while True:
-        config.read('DHT22.cfg')
-        t, h = 0, 0
-        t, h = read_temperature(PIN17)
-        store_in_database(t, h, '1')
-        t, h = 0, 0
-        read_temperature(PIN27)
-        store_in_database(t, h, '2')
+        for sensor in sensors:
+            sensor.read_temperature()
+            data = sensor.get_dict()
+            db.insert_row(data)
         sleep(SLEEPY_TIME_MINUTES * 60)
 
 if __name__ == "__main__":
     main_loop()
 
-
-# COMPLETED: While loop added with a sleep in between loops.
-# COMPLETED: Refactor current sensor calls to a function.
-# COMPLETED: Push data to DB.
-  
