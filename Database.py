@@ -4,18 +4,24 @@ from helpers import bcolors
 
 
 class Database:
-    INSERT_QUERY = "INSERT INTO " \
-                   "readings(readingtimestamp, sensor, temperature, humidity, location) " \
-                   "VALUES (%(timestamp)s, %(sensor)s, %(temp)s, %(humidity)s, %(location)s)"
+    INSERT_QUERY = """INSERT INTO
+                    readings(readingtimestamp, sensor,
+                    temperature, humidity, location)
+                    VALUES (
+                        %(timestamp)s, %(sensor)s, %(temp)s,
+                        %(humidity)s, %(location)s
+                    )"""
     SELECT_QUERY = "SELECT * FROM readings WHERE {}"
 
     def __init__(self):
         self.config = configparser.ConfigParser()
         self.config.read('database.cfg')
         try:
-            self.cnx = mysql.connector.connect(host=self.config["database"]["host"], 
-                                    user=self.config["database"]["user"],
-                                    password=self.config["database"]["password"])
+            self.cnx = mysql.connector.connect(
+                host=self.config["database"]["host"],
+                user=self.config["database"]["user"],
+                password=self.config["database"]["password"]
+                )
         except mysql.connector.Error as err:
             self.handle_error_code(err)
             raise err
@@ -37,12 +43,15 @@ class Database:
         return False
 
     def create_table(self):
-        self.cursor.execute("CREATE TABLE {} (readingtimestamp datetime, sensor varchar(20), "
-                    "temperature decimal, humidity decimal, location varchar(20));".format(self.config["readwrite"]["table"]))
+        query = f"""CREATE TABLE {self.config['readwrite']['table']}
+                (readingtimestamp datetime, sensor varchar(20),
+                temperature decimal, humidity decimal,
+                location varchar(20));"""
+        self.cursor.execute(query)
         self.cnx.commit()
 
     def describe_table(self, table_name):
-        self.cursor.execute("DESCRIBE {}".format(self.config["readwrite"]["table"]))
+        self.cursor.execute(f"DESCRIBE {self.config['readwrite']["table"]}")
         print(bcolors.UNDERLINE, "[ Table Columns ]", bcolors.ENDC)
         for row in self.cursor:
             print(row[0], ":", row[1])
@@ -53,12 +62,13 @@ class Database:
 
     @staticmethod
     def handle_error_code(error: mysql.connector.Error):
-            if error.errno == 2003:
-                print("Please check that you supplied the correct host.")
-            elif error.errno == 1045:
-                print(bcolors.WARNING, "Wrong username or password.", bcolors.ENDC)
-            elif error.errno == 1049:
-                print(bcolors.WARNING, "The database does not exist.", bcolors.ENDC)
+        error_codes = {
+            2003: "Please check that you supplied the correct host.",
+            1045: "Wrong username or password.",
+            1049: "The database does not exist."
+        }
+        if error_codes[error.errno]:
+            print(bcolors.WARNING, error_codes[error.errno], bcolors.ENDC)
 
 
 if __name__ == "__main__":
