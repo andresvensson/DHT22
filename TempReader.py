@@ -47,7 +47,8 @@ def main_loop():
     }
     while True:
         for sensor in sensors:
-            sensor.read_temperature()
+            # sensor.read_temperature()
+            sensor.get_reading()
             data = sensor.get_dict()
             db.insert_row(data)
         sleep(SLEEPY_TIME_MINUTES * 60)
