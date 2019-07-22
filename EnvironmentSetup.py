@@ -33,26 +33,27 @@ def get_database_and_table(cfg):
 
 def create_config_file(cfg):
     conf = configparser.ConfigParser()
-    print(bcolors.OKGREEN, "-"*20)
+    print("-"*20)
     print("Your config: ")
-    print("-" * 20, bcolors.ENDC)
+    print("-" * 20)
     for key in cfg:
         conf.add_section(key)
         for key2 in cfg[key]:
             print(key2, ':', cfg[key][key2])
             conf.set(key, key2, cfg[key][key2])
-    print(bcolors.OKGREEN, "-" * 20, bcolors.ENDC)
+    print("-" * 20)
     with open('DHT22.cfg', 'w') as file:
         conf.write(file)
-        print(bcolors.OKBLUE, "Config file created: ", file.name, bcolors.ENDC)
-    print(bcolors.OKGREEN, "-" * 20, bcolors.ENDC)
+        print("Config file created: ", file.name)
+    print("-" * 20)
 
 
 def do_setup():
     cfg = {"database": {}, "readwrite": {}}
     db = Database()
-    print(bcolors.HEADER,
-          "Hello! Seems like it's your first time running this program, let's do some setup...", bcolors.ENDC)
+    print("""Hello! Seems like it's your first time running this program,
+            let's do some setup...
+        """)
     get_database_connection_details(cfg)
     #db.test_connection(cfg["database"], "connection")
     get_database_and_table(cfg)
@@ -72,4 +73,4 @@ def do_setup():
 
 if __name__ == "__main__":
     do_setup()
-    print(bcolors.HEADER, "Setup complete.", bcolors.ENDC)
+    print("[*] Setup complete!")
