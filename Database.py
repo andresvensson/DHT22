@@ -1,6 +1,7 @@
 import configparser
 from typing import Dict
-import mysql.connector
+from mysql import connector
+
 
 
 class Database:
@@ -13,21 +14,37 @@ class Database:
                     )"""
     SELECT_QUERY = "SELECT * FROM readings WHERE {}"
 
-    def __init__(self):
+    def __init__(self, config_path: str ='database.cfg'):
         self.config = configparser.ConfigParser()
-        self.config.read('database.cfg')
+        self.config.read(config_path)
         self.table_name: str = self.config['readwrite']['table']
-        self.self_db: str = self.config['readwrite']['database']
+        self.db_name: str = self.config['readwrite']['database']
+        self.cnx = None
+        self.cursor = None
+        self.last_error = None
+        self.connect()
+
+    def connect(self) -> bool:
         try:
-            self.cnx = mysql.connector.connect(
+            self.cnx = connector.connect(
                     host=self.config["database"]["host"],
                     user=self.config["database"]["user"],
                     password=self.config["database"]["password"]
                     )
             self.cursor = self.cnx.cursor()
-        except mysql.connector.error as err:
+            return True
+        except connector.error as err:
             self.handle_error_code(err)
-            raise(err)
+            self.last_error = err
+            return False
+
+    def database_exists(self) -> bool:
+        query = f"SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA
+        WHERE SCHEMA_NAME = '{self.db_name}'"
+        self.cursor.execute()
+        for db in self.cursor:
+            return self.db_name in db
+        return False
 
     def create_new_database(self):
         print(f"Creating database: {self.db_name}")
@@ -43,7 +60,7 @@ class Database:
     def table_exists(self) -> bool:
         self.cursor.execute('SHOW TABLES')
         for table in self.cursor:
-            return self.config["readwrite"]["table"] in table
+            return self.table_name in table
         return False
 
     def set_use_db(self):
@@ -81,6 +98,18 @@ class Database:
         if error_codes.get(error.errno):
             print(error_codes[error.errno])
 
+    def create_sample_data(no_of_rows):
+        # readings(readingtimestamp, sensor, temperature, humidity, location)
+        db = Database()
+        for i in range(0, no_of_rows):
+            sensor = random.randint(1, 2)
+            location = "Sample" + str(sensor)
+            reader = TempReader(0, location)
+            reader.temperature = random.randint(10, 30)
+            reader.humidity = random.randint(30, 100)
+            fake_reading = reader.get_dict()
+            fake_reading["timestamp"] = datetime.now() - timedelta(days=i)
+            db.insert_row(fake_reading)
 
 if __name__ == "__main__":
     db = Database()
