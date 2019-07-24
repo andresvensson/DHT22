@@ -103,3 +103,4 @@ ENV/
 # PyCharm
 *.xml
 *.cfg
+.vscode/settings.json
