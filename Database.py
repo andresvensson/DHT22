@@ -1,8 +1,10 @@
-from typing import Dict
-from datetime import datetime, timedelta
-import random
 import configparser
+import random
+from datetime import datetime, timedelta
+from typing import Dict
+
 from mysql import connector
+
 from TempReader import TempReader
 
 
@@ -29,10 +31,10 @@ class Database:
     def connect(self) -> bool:
         try:
             self.cnx = connector.connect(
-                    host=self.config["database"]["host"],
-                    user=self.config["database"]["user"],
-                    password=self.config["database"]["password"]
-                    )
+                host=self.config['database']['host'],
+                user=self.config['database']['user'],
+                password=self.config['database']['password']
+            )
             self.cursor = self.cnx.cursor()
             return True
         except connector.error as err:

@@ -1,10 +1,11 @@
 #!/usr/bin/python
+import configparser
+from datetime import datetime
+from time import sleep
+from typing import Dict
+
 import Adafruit_DHT
 from Database import Database
-from typing import Dict
-from time import sleep
-from datetime import datetime
-import configparser
 
 PIN17 = 17
 PIN27 = 27

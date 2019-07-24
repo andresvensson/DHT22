@@ -1,7 +1,8 @@
+import configparser
 from typing import Dict
+
 from Database import Database
 from helpers import query_yes_no
-import configparser
 
 
 class ConfigCreator:
