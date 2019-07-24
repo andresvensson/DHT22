@@ -17,15 +17,19 @@ class TempReader:
         self.sensor = Adafruit_DHT.DHT22
         self.location = location
         self.config = configparser.ConfigParser()
-        self.config.read('DHT22.cfg')
+        self.read_config()
         self.temperature: float = 0
         self.humidity: float = 0
+
+    def read_config(self):
+        self.config.read('DHT22.cfg')
 
     def get_reading(self):
         self.humidity, self.temperature = Adafruit_DHT.read_retry(self.sensor,
                                                                   self.pin)
         if self.humidity is not None and self.temperature is not None:
-            print(f'Temp={self.temperature:0.1f}*C  Humidity={self.humidity:0.1f}%')
+            print(f'''Temp={self.temperature:0.1f}*C
+            Humidity={self.humidity:0.1f}%''')
         else:
             print('Failed to get reading. Try again!')
             self.humidity, self.temperature = 0, 0
@@ -48,11 +52,12 @@ def main_loop():
     }
     while True:
         for sensor in sensors:
-            # sensor.read_temperature()
+            sensor.read_config()
             sensor.get_reading()
             data = sensor.get_dict()
             db.insert_row(data)
         sleep(SLEEPY_TIME_MINUTES * 60)
+
 
 if __name__ == "__main__":
     main_loop()
