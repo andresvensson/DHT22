@@ -1,7 +1,9 @@
-import configparser
 from typing import Dict
+from datetime import datetime, timedelta
+import random
+import configparser
 from mysql import connector
-
+from TempReader import TempReader
 
 
 class Database:
@@ -14,7 +16,7 @@ class Database:
                     )"""
     SELECT_QUERY = "SELECT * FROM readings WHERE {}"
 
-    def __init__(self, config_path: str ='database.cfg'):
+    def __init__(self, config_path: str = 'database.cfg'):
         self.config = configparser.ConfigParser()
         self.config.read(config_path)
         self.table_name: str = self.config['readwrite']['table']
@@ -39,19 +41,20 @@ class Database:
             return False
 
     def database_exists(self) -> bool:
-        query = f"SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA
-        WHERE SCHEMA_NAME = '{self.db_name}'"
-        self.cursor.execute()
+        query = f"""SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA
+        WHERE SCHEMA_NAME = '{self.db_name}'"""
+        self.cursor.execute(query)
         for db in self.cursor:
             return self.db_name in db
         return False
 
     def create_new_database(self):
         print(f"Creating database: {self.db_name}")
+        query = f"CREATE DATABASE IF NOT EXISTS {self.db_name}"
         try:
-            self.cursor.execute(f"CREATE DATABASE IF NOT EXISTS {self.db_name}")
+            self.cursor.execute(query)
             self.cnx.commit()
-        except mysql.connector.Error as err:
+        except connector.Error as err:
             print("[!] Could not create database")
             self.handle_error_code(err)
         finally:
@@ -88,7 +91,7 @@ class Database:
         self.cnx.commit()
 
     @staticmethod
-    def handle_error_code(error: mysql.connector.Error):
+    def handle_error_code(error: connector.Error):
         error_codes: Dict[int, str] = {
             2003: "Please check that you supplied the correct host.",
             1045: "Wrong username or password.",
@@ -110,6 +113,7 @@ class Database:
             fake_reading = reader.get_dict()
             fake_reading["timestamp"] = datetime.now() - timedelta(days=i)
             db.insert_row(fake_reading)
+
 
 if __name__ == "__main__":
     db = Database()
